@@ -44,12 +44,12 @@
         window.firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             // REEMPLAZA ESTOS CON TU PROPIA CONFIGURACIÓN DE FIREBASE SI LA TIENES.
             // Si los dejas así, la aplicación usará una base de datos temporal anónima.
-            apiKey: "TU_API_KEY", // <--- Reemplaza con tu API Key real de Firebase
-            authDomain: "TU_AUTH_DOMAIN", // <--- Reemplaza con tu Auth Domain real de Firebase
-            projectId: "TU_PROJECT_ID", // <--- Reemplaza con tu Project ID real de Firebase
+            apiKey: "TU_API_KEY", 
+            authDomain: "TU_AUTH_DOMAIN", 
+            projectId: "TU_PROJECT_ID", 
             storageBucket: "TU_STORAGE_BUCKET",
             messagingSenderId: "TU_MESSAGING_SENDER_ID",
-            appId: "TU_APP_ID" // <--- Reemplaza con tu App ID real de Firebase
+            appId: "TU_APP_ID" 
         };
         window.appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // ID de la aplicación para Firestore
         window.initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -103,6 +103,7 @@
                 return savedRate ? parseFloat(savedRate) : 36.5;
             });
             const [sales, setSales] = useState([]);
+            // Reintegración de las variables de estado para gastos
             const [expenses, setExpenses] = useState([]);
 
             const [saleDate, setSaleDate] = useState('');
@@ -111,6 +112,7 @@
             const [saleAmount, setSaleAmount] = useState('');
             const [saleCurrency, setSaleCurrency] = useState('USD');
 
+            // Reintegración de las variables de estado para el formulario de gastos
             const [expenseDate, setExpenseDate] = useState('');
             const [expenseCategory, setExpenseCategory] = useState('');
             const [expenseAmount, setExpenseAmount] = useState('');
@@ -161,6 +163,7 @@
                 if (!isAuthenticated || !userId) return;
 
                 const salesColRef = collection(db, `artifacts/${appId}/users/${userId}/sales`);
+                // Reintegración de la referencia a la colección de gastos
                 const expensesColRef = collection(db, `artifacts/${appId}/users/${userId}/expenses`);
 
                 const unsubscribeSales = onSnapshot(salesColRef, (snapshot) => {
@@ -171,6 +174,7 @@
                     showMessage(`Error al cargar ventas: ${error.message}`, 'error');
                 });
 
+                // Reintegración del listener de gastos
                 const unsubscribeExpenses = onSnapshot(expensesColRef, (snapshot) => {
                     const fetchedExpenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setExpenses(fetchedExpenses.sort((a, b) => new Date(b.date) - new Date(a.date)));
@@ -181,7 +185,7 @@
 
                 return () => {
                     unsubscribeSales();
-                    unsubscribeExpenses();
+                    unsubscribeExpenses(); // Reintegrado
                 };
             }, [isAuthenticated, userId]);
 
@@ -217,6 +221,7 @@
                 }
             };
 
+            // Reintegración de la función handleAddExpense
             const handleAddExpense = async (e) => {
                 e.preventDefault();
                 if (!expenseDate || !expenseCategory || !expenseAmount || !userId) {
@@ -253,6 +258,7 @@
                 }
             };
 
+            // Reintegración de la función handleDeleteExpense
             const handleDeleteExpense = async (id) => {
                 try {
                     await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/expenses`, id));
@@ -280,8 +286,9 @@
             const totalSalesUSD = sales.reduce((acc, sale) => acc + (convertToUSD(sale.amount, sale.currency) * sale.quantity), 0);
             const totalSalesVES = sales.reduce((acc, sale) => acc + (convertToVES(sale.amount, sale.currency) * sale.quantity), 0);
 
-            const totalExpensesUSD = expenses.reduce((acc, expense) => acc + convertToUSD(expense.amount, expense.currency), 0);
-            const totalExpensesVES = expenses.reduce((acc, expense) => acc + convertToVES(expense.amount, expense.currency), 0);
+            // Reintegración de los cálculos de gastos
+            const totalExpensesUSD = expenses.reduce((acc, expense) => acc + convertToUSD(expense.amount, expense.currency), 0); 
+            const totalExpensesVES = expenses.reduce((acc, expense) => acc + convertToVES(expense.amount, expense.currency), 0); 
 
             const netProfitUSD = totalSalesUSD - totalExpensesUSD;
             const netProfitVES = totalSalesVES - totalExpensesVES;
@@ -443,6 +450,7 @@
 
                         <hr className="my-8 border-gray-300" />
 
+                        {/* Sección de Registrar Gasto */}
                         <div className="mb-8">
                             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Registrar Gasto</h2>
                             <form onSubmit={handleAddExpense} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -473,7 +481,7 @@
                                         type="number"
                                         id="expenseAmount"
                                         value={expenseAmount}
-                                        onChange={(e) => setExpenseAmount(e.target.value)}
+                                        onChange={(e) => setExpenseAmount(parseFloat(e.target.value) || '')}
                                         placeholder="Ej: 15.00"
                                         min="0"
                                         step="0.01"
@@ -505,6 +513,7 @@
 
                         <hr className="my-8 border-gray-300" />
 
+                        {/* Sección de Historial de Ventas */}
                         <div className="mb-8">
                             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Historial de Ventas</h2>
                             {sales.length === 0 ? (
@@ -555,7 +564,8 @@
                         </div>
 
                         <hr className="my-8 border-gray-300" />
-
+                        
+                        {/* Sección de Historial de Gastos */}
                         <div>
                             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Historial de Gastos</h2>
                             {expenses.length === 0 ? (
